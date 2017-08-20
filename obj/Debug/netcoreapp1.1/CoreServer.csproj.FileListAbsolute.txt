@@ -1,8 +1,0 @@
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\bin\Debug\netcoreapp1.1\CoreServer.deps.json
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\bin\Debug\netcoreapp1.1\CoreServer.dll
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\bin\Debug\netcoreapp1.1\CoreServer.pdb
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\obj\Debug\netcoreapp1.1\CoreServer.csprojResolveAssemblyReference.cache
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\obj\Debug\netcoreapp1.1\CoreServer.AssemblyInfo.cs
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\obj\Debug\netcoreapp1.1\CoreServer.dll
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\obj\Debug\netcoreapp1.1\CoreServer.pdb
-f:\documents\visual studio 2017\Projects\ChatServer\CoreServer\obj\Debug\netcoreapp1.1\CoreServer.csproj.CoreCompileInputs.cache
