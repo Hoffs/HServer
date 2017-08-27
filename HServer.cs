@@ -9,10 +9,15 @@ namespace CoreServer
 {
     public class HServer
     {
+        private List<HClient> clients = new List<HClient>();
         private TcpListener listener;
         object _lock = new Object(); // sync lock 
         List<Task> _connections = new List<Task>(); // pending connections
 
+        /*
+         * Have a processing Class that has a switch case.
+         * Handle requests as they come in
+         */
 
         public HServer(int port)
         {
