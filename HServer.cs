@@ -9,8 +9,8 @@ namespace CoreServer
 {
     public class HServer
     {
-        private List<HClient> clients = new List<HClient>();
         private TcpListener listener;
+        private HClientManager _clientManager = new HClientManager();
         object _lock = new Object(); // sync lock 
         List<Task> _connections = new List<Task>(); // pending connections
 
@@ -41,10 +41,10 @@ namespace CoreServer
                 {
                     var tcpClient = await listener.AcceptTcpClientAsync();
                     Console.WriteLine("Client connected");
-                    var task = StartHandleConnectionAsync(tcpClient);
+                    var hClient = await _clientManager.AddClientTask(tcpClient);
+                    // var task = StartHandleConnectionAsync(tcpClient);
                     // if already faulted, re-throw any error on the calling context
-                    if (task.IsFaulted)
-                        task.Wait();
+                    
                 }
             });
         }
