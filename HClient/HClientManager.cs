@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using ChatProtos.Networking;
 
 /*
  * Helps handling all the clients
@@ -52,19 +53,23 @@ namespace CoreServer
         /// </summary>
         /// <param name="message">Message that is being sent</param>
         /// <returns></returns>
-        public async Task SendMessageToAllTask(string message)
+        public async Task SendMessageToAllTask(ResponseMessage message)
         {
+            await Task.Yield();
             var tasks = new List<Task>();
-            foreach (var hClient in _clients)
+            lock (_lock)
             {
-                tasks.Add(hClient.SendMessageToUserTask(message));
+                foreach (var hClient in _clients)
+                {
+                    tasks.Add(hClient.SendMessageToUserTask(message));
+                }    
             }
             await Task.WhenAll(tasks);
         }
 
         public async Task SendMessageToAllInChannelTask(string channel, string message)
         {
-            
+            // _clients.FindAll()
         }
 
         public HClient FindHClientById(string id)
