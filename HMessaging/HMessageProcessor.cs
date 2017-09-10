@@ -48,7 +48,7 @@ namespace CoreServer
                         else
                         {
                             Console.WriteLine("[SERVER] User {0} tried joining channel {1}.",
-                                hClient.GetDisplayName(), joinRequest.ChanneName);
+                                hClient.GetDisplayName(), joinRequest.ChannelName);
                         }
                         break;
                     case RequestType.LeaveChannel:
