@@ -11,9 +11,9 @@ namespace CoreServer
 {
     public class HClient
     {
-        private TcpClient _tcpClient;
-        private object _lock = new Object(); // sync lock 
-        private List<string> _channels = new List<string>();
+        private readonly TcpClient _tcpClient;
+        private object _lock = new object(); // sync lock 
+        private readonly List<string> _channels = new List<string>();
         public NetworkStream NetworkStream { get; private set; }
         public string Id { get; private set; }
         public string Username { get; private set; } = string.Empty;
@@ -137,30 +137,18 @@ namespace CoreServer
          * Have list of Channels and have Channels with list of Users (because references are cheap)
          */
 
-        public bool IsConnected
+        public bool IsConnected()
         {
-            get
+            try
             {
-                try
-                {
-                    if (_tcpClient == null || _tcpClient.Client == null || !_tcpClient.Client.Connected) return false;
-                    /* pear to the documentation on Poll:
-                         * When passing SelectMode.SelectRead as a parameter to the Poll method it will return 
-                         * -either- true if Socket.Listen(Int32) has been called and a connection is pending;
-                         * -or- true if data is available for reading; 
-                         * -or- true if the connection has been closed, reset, or terminated; 
-                         * otherwise, returns false
-                         */
-
-                    // Detect if client disconnected
-                    if (!_tcpClient.Client.Poll(0, SelectMode.SelectRead)) return true;
-                    byte[] buff = new byte[1];
-                    return _tcpClient.Client.Receive(buff, SocketFlags.Peek) != 0;
-                }
-                catch
-                {
-                    return false;
-                }
+                if (_tcpClient?.Client == null || !_tcpClient.Client.Connected) return false;
+                if (!_tcpClient.Client.Poll(0, SelectMode.SelectRead)) return true;
+                var buff = new byte[1];
+                return _tcpClient.Client.Receive(buff, SocketFlags.Peek) != 0;
+            }
+            catch
+            {
+                return false;
             }
         }
 

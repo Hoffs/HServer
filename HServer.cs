@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
+using CoreServer.HChannel;
 using CoreServer.HMessaging;
 using CoreServer.HMessaging.HCommands;
 using Google.Protobuf;
@@ -15,35 +16,39 @@ namespace CoreServer
 {
     public class HServer
     {
-        private readonly TcpListener listener;
+        private readonly TcpListener _listener;
         private readonly HClientManager _clientManager = new HClientManager();
+        private readonly HChannelManager _channelManager = new HChannelManager();
         private readonly HMessageProcessor _messageProcessor;
         private const int SizeLimit = 5_000_000;
         private object _lock = new object(); // sync lock
         public HCommandRegistry CommandRegistry { get; } = new HCommandRegistry(); // Maybe change to private and have a command in HServer to add commands.
         
+        
         public HServer(int port)
         {
             _messageProcessor = new HMessageProcessor(CommandRegistry);
-            listener = new TcpListener(IPAddress.Any, port);
-            listener.Server.SetSocketOption(SocketOptionLevel.Socket,
+            _listener = new TcpListener(IPAddress.Any, port);
+            _listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
                 true);
+
+            _channelManager.CreateChannel("memes");
         }
 
         public void RegisterDefaultCommands()
         {
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Login), new LoginCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Logout), new LogoutCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelCommand(_channelManager));
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelCommand(_channelManager));
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.AddRole), new AddRoleCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.RemoveRole), new RemoveRoleCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.BanUser), new BanUserCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.KickUser), new KickUserCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UserInfo), new UserInfoCommand());
             CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UpdateDisplayName), new UpdateDisplayNameCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageCommand(_channelManager));
         }
 
         public void Run()
@@ -57,10 +62,10 @@ namespace CoreServer
         {
             return Task.Run(async () =>
             {
-                listener.Start();
+                _listener.Start();
                 while (true)
                 {
-                    var tcpClient = await listener.AcceptTcpClientAsync();
+                    var tcpClient = await _listener.AcceptTcpClientAsync();
                     Console.WriteLine("[SERVER] Client connected");
                     var hClient = await _clientManager.AddClientTask(tcpClient);
 
@@ -84,7 +89,7 @@ namespace CoreServer
             Console.WriteLine("[SERVER] Reading messages for tcpclient");
             using (var networkStream = hClient.NetworkStream)
             {
-                while (hClient.IsConnected)
+                while (hClient.IsConnected())
                 {
                     var packetSizeBytes = new byte[4];
                     await networkStream.ReadAsync(packetSizeBytes, 0, 4);

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
 
@@ -15,11 +13,7 @@ namespace CoreServer
     class HClientManager
     {
         private readonly List<HClient> _clients = new List<HClient>();
-        private readonly object _lock = new Object();
-
-        public HClientManager()
-        {
-        }
+        private readonly object _lock = new object();
 
         /// <summary>
         /// Adds a Client to the _clients List if connection is started successfully.
@@ -65,11 +59,6 @@ namespace CoreServer
                 }    
             }
             await Task.WhenAll(tasks);
-        }
-
-        public async Task SendMessageToAllInChannelTask(string channel, string message)
-        {
-            // _clients.FindAll()
         }
 
         public HClient FindHClientById(string id)

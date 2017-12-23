@@ -1,25 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
-namespace CoreServer
+namespace CoreServer.HChannel
 {
-    class HChannel
+    public class HChannel
     {
-        private List<HClient> _joinedClients = new List<HClient>();
-        public String Id { get; private set; }
-        public String Name { get; private set; }
-        private Object _lock = new Object();
+        private readonly HashSet<HClient> _joinedClients = new HashSet<HClient>();
+        public string Id { get; private set; }
+        public string Name { get; private set; }
+        private readonly object _lock = new object();
 
         public HChannel(string name)
         {
-            // Name = name;
-            // Id = System.Guid.NewGuid().ToString();
+            Name = name;
+            Id = Guid.NewGuid().ToString();
         }
 
         public void AddClient(HClient hClient)
         {
-            lock (_lock) // Add a check for permissions or something
+            lock (_lock) // Add a check for permissions or 
                 _joinedClients.Add(hClient);
         }
 
@@ -27,6 +27,14 @@ namespace CoreServer
         {
             lock (_lock)
                 _joinedClients.Remove(hClient);
+        }
+
+        public List<HClient> GetClients()
+        {
+            lock (_lock)
+            {
+                return _joinedClients.ToList();
+            }
         }
 
         public static Predicate<HChannel> ByChannelName(string name)

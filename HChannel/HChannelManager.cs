@@ -1,18 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
+using ChatProtos.Networking;
 
-namespace CoreServer
+namespace CoreServer.HChannel
 {
-
-    class HChannelManager
+    public class HChannelManager
     {
-        private List<HChannel> _hChannels = new List<HChannel>();
-        private Object _lock = new Object();
+        private readonly List<HChannel> _hChannels = new List<HChannel>();
+        private readonly object _lock = new object();
 
-        public HChannelManager()
+        public void CreateChannel(string name)
         {
-            
+            _hChannels.Add(new HChannel(name));
         }
 
         public HChannel FindChannelByName(string name)
@@ -25,6 +26,12 @@ namespace CoreServer
         {
             lock (_lock)
                 return _hChannels.Find(HChannel.ByChannelId(id));
+        }
+
+        public async Task SendToAllInChannel(HChannel channel, ResponseMessage message)
+        {
+            var tasks = channel.GetClients().Select(async client => await client.SendMessageToUserTask(message));
+            await Task.WhenAll(tasks);
         }
     }
 }

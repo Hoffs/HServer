@@ -49,6 +49,10 @@ namespace CoreServer
                 }
                 */
             }
+            catch (NotImplementedException e)
+            {
+                Console.WriteLine("[SERVER] Command not implemented.");
+            }
             catch (CommandNotExistsException e)
             {
                 Console.WriteLine("[SERVER] Command does not exist");
