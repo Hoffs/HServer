@@ -7,6 +7,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
+using CoreServer.HMessaging;
+using CoreServer.HMessaging.HCommands;
 using Google.Protobuf;
 
 namespace CoreServer
@@ -15,16 +17,33 @@ namespace CoreServer
     {
         private readonly TcpListener listener;
         private readonly HClientManager _clientManager = new HClientManager();
-        private readonly HMessageProcessor _messageProcessor = new HMessageProcessor();
-        private const int SizeLimit = 5000000;
+        private readonly HMessageProcessor _messageProcessor;
+        private const int SizeLimit = 5_000_000;
         private object _lock = new object(); // sync lock
+        public HCommandRegistry CommandRegistry { get; } = new HCommandRegistry(); // Maybe change to private and have a command in HServer to add commands.
         
         public HServer(int port)
         {
+            _messageProcessor = new HMessageProcessor(CommandRegistry);
             listener = new TcpListener(IPAddress.Any, port);
             listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
                 true);
+        }
+
+        public void RegisterDefaultCommands()
+        {
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Login), new LoginCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Logout), new LogoutCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.AddRole), new AddRoleCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.RemoveRole), new RemoveRoleCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.BanUser), new BanUserCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.KickUser), new KickUserCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UserInfo), new UserInfoCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UpdateDisplayName), new UpdateDisplayNameCommand());
+            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageCommand());
         }
 
         public void Run()
@@ -54,6 +73,11 @@ namespace CoreServer
             });
         }
         
+        /// <summary>
+        /// Task that constatly reads packets from HClient.
+        /// </summary>
+        /// <param name="hClient">HClient from whom to start accepting packets.</param>
+        /// <returns></returns>
         private async Task StartReadingMessagesTask(HClient hClient)
         {
             await Task.Yield();
@@ -63,7 +87,7 @@ namespace CoreServer
                 while (hClient.IsConnected)
                 {
                     var packetSizeBytes = new byte[4];
-                    var packetSize = await networkStream.ReadAsync(packetSizeBytes, 0, 4);
+                    await networkStream.ReadAsync(packetSizeBytes, 0, 4);
                     var size = BitConverter.ToInt32(packetSizeBytes, 0);
                     
                     if (size > SizeLimit)
@@ -81,7 +105,8 @@ namespace CoreServer
                     {
                         var message = RequestMessage.Parser.ParseFrom(buffer);
                         Console.WriteLine("[SERVER] Client {1} wrote protobuf of type: {0}", message.Type, hClient.GetDisplayName());
-                        var responseMessage = await _messageProcessor.ProcessMessage(message, hClient);
+                        await _messageProcessor.ProcessMessage(message, hClient);
+                        Console.WriteLine("[SERVER] Processed message from Client {0}", hClient.GetDisplayName());
                     }
                     catch (InvalidProtocolBufferException e)
                     {
@@ -99,7 +124,7 @@ namespace CoreServer
         /// <param name="networkStream">Incoming NetworkStream.</param>
         /// <param name="size">Size of the packet to dump.</param>
         /// <returns></returns>
-        private static async Task DumpDataTask(NetworkStream networkStream, int size)
+        private static async Task DumpDataTask(Stream networkStream, int size)
         {
             try
             {

@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
 using ChatProtos.Networking.Messages;
+using CoreServer.HMessaging;
+using CoreServer.HMessaging.HCommands;
 using Google.Protobuf;
 
 namespace CoreServer
 {
     class HMessageProcessor
     {
-        public HMessageProcessor()
+        private HCommandRegistry _commandRegistry;
+
+
+        public HMessageProcessor(HCommandRegistry registry)
         {
-            
+            _commandRegistry = registry;
         }
 
         /// <summary>
@@ -21,47 +27,17 @@ namespace CoreServer
         /// <param name="message">Incoming message.</param>
         /// <param name="hClient">HClient which sent the message.</param>
         /// <returns>Returns ResponseMessage.</returns>
-        public async Task<ResponseMessage> ProcessMessage(RequestMessage message, HClient hClient)
+        public async Task ProcessMessage(RequestMessage message, HClient hClient)
         {
-            var responseMessage = new ResponseMessage();
             try
             {
+                var command = _commandRegistry.GetCommand(new HCommandIdentifier(message.Type));
+                Console.WriteLine("[SERVER] Got command {0}", command.ToString());
+                await command.Execute(message, hClient);
+
+                /*
                 switch (message.Type)
-                {
-                    case RequestType.Login:
-                        var loginRequest = LoginMessageRequest.Parser.ParseFrom(message.Message);
-                        var result = await hClient.TryAuthenticatingTask(loginRequest.Username, loginRequest.Password, loginRequest.Token);
-                        Console.WriteLine("[SERVER] After login for client {0}: {1} {2}", hClient.GetDisplayName(), result.Item1, result.Item2);
-                        break;
-                    case RequestType.Logout:
-                        var logoutRequest = LogoutMessageRequest.Parser.ParseFrom(message.Message);
-                        await hClient.TryDeauthenticatingTask();
-                        Console.WriteLine("[SERVER] After logout for client {0}", hClient.GetDisplayName());
-                        break;
-                    case RequestType.JoinChannel:
-                        var joinRequest = JoinChannelMessageRequest.Parser.ParseFrom(message.Message);
-                        if (!hClient.Authenticated)
-                        {
-                            Console.WriteLine("[SERVER] User {0} not authenticated to perform this action.",
-                                hClient.GetDisplayName());
-                        }
-                        else
-                        {
-                            Console.WriteLine("[SERVER] User {0} tried joining channel {1}.",
-                                hClient.GetDisplayName(), joinRequest.ChannelName);
-                        }
-                        break;
-                    case RequestType.LeaveChannel:
-                        
-                    case RequestType.AddRole:
-                        
-                    case RequestType.RemoveRole:
-                        
-                    case RequestType.KickUser:
-                        
-                    case RequestType.BanUser:
-                        
-                    case RequestType.UpdateDisplayName:
+                {                        
                         
                     case RequestType.ChatMessage:
                         
@@ -71,7 +47,11 @@ namespace CoreServer
                         Console.WriteLine("Type not found or not implemented");
                         break;
                 }
-                return responseMessage;
+                */
+            }
+            catch (CommandNotExistsException e)
+            {
+                Console.WriteLine("[SERVER] Command does not exist");
             }
             catch (InvalidProtocolBufferException e)
             {

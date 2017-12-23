@@ -9,7 +9,7 @@ using Google.Protobuf;
 
 namespace CoreServer
 {
-    internal class HClient
+    public class HClient
     {
         private TcpClient _tcpClient;
         private object _lock = new Object(); // sync lock 
