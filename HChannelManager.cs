@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
 
-namespace CoreServer.HChannel
+namespace CoreServer
 {
     public class HChannelManager
     {
@@ -30,6 +30,7 @@ namespace CoreServer.HChannel
 
         public async Task SendToAllInChannel(HChannel channel, ResponseMessage message)
         {
+            Console.WriteLine("[SERVER] Sending message to everyone in channe: {0}", channel.Name);
             var tasks = channel.GetClients().Select(async client => await client.SendMessageToUserTask(message));
             await Task.WhenAll(tasks);
         }

@@ -2,8 +2,6 @@
 using System.Threading.Tasks;
 using ChatProtos.Networking;
 using ChatProtos.Networking.Messages;
-using CoreServer.HChannel;
-
 namespace CoreServer.HMessaging.HCommands
 {
     public class LeaveChannelCommand : ICommand
@@ -25,7 +23,7 @@ namespace CoreServer.HMessaging.HCommands
             }
             else
             {
-                HChannel.HChannel channel = null;
+                HChannel channel = null;
                 if (joinRequest.ChannelId != null)
                 {
                     channel = _channelManager.FindChannelById(joinRequest.ChannelId);
@@ -34,7 +32,10 @@ namespace CoreServer.HMessaging.HCommands
                     channel = _channelManager.FindChannelByName(joinRequest.ChannelName);
                 }
 
-                channel?.RemoveClient(client);
+                if (channel?.RemoveClient(client) == true)
+                {
+                    client.RemoveChannel(channel);
+                }
 
                 Console.WriteLine("[SERVER] User {0} tried leaving channel {1}.",
                     client.GetDisplayName(), joinRequest.ChannelName);

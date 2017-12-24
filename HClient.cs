@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace CoreServer
     {
         private readonly TcpClient _tcpClient;
         private object _lock = new object(); // sync lock 
-        private readonly List<string> _channels = new List<string>();
+        private readonly HashSet<HChannel> _channels = new HashSet<HChannel>();
         public NetworkStream NetworkStream { get; private set; }
         public string Id { get; private set; }
         public string Username { get; private set; } = string.Empty;
@@ -57,6 +58,7 @@ namespace CoreServer
         {
             try
             {
+                Console.WriteLine("[SERVER] Sending message to user of type: {0}", responseMessage.Type);
                 var responseBytes = responseMessage.ToByteArray();
                 var packet = new byte[4 + responseBytes.Length];
 
@@ -84,6 +86,38 @@ namespace CoreServer
             return (Username != string.Empty) ? Username : Id;
         }
 
+        public List<HChannel> GetChannels()
+        {
+            lock (_lock)
+            {
+                return _channels.ToList();
+            }
+        }
+
+        public void AddChannel(HChannel channel)
+        {
+            lock (_lock)
+            {
+                try
+                {
+                    _channels.Add(channel);
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine("[SERVER] User already in channel.");
+                    throw;
+                }
+            }
+        }
+
+        public void RemoveChannel(HChannel channel)
+        {
+            lock (_lock)
+            {
+                _channels.Remove(channel);
+            }
+        }
+
         public static Predicate<HClient> ByIdPredicate(string id)
         {
             return hClient => hClient.Id == id;
@@ -94,9 +128,9 @@ namespace CoreServer
             return hClient => hClient.DisplayName == displayName;
         }
 
-        public static Predicate<HClient> ByChannelId(string id)
+        public static Predicate<HClient> ByChannel(HChannel channel)
         {
-            return hClient => hClient._channels.Contains(id); // Actually change to use actual channel objects  
+            return hClient => hClient._channels.Contains(channel); // Actually change to use actual channel objects  
         }
 
         public async Task<Tuple<string, string>> TryAuthenticatingTask(string username, string password = null, string token = null)

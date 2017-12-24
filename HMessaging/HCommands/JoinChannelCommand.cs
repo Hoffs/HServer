@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using ChatProtos.Networking;
 using ChatProtos.Networking.Messages;
-using CoreServer.HChannel;
 
 namespace CoreServer.HMessaging.HCommands
 {
@@ -25,7 +24,7 @@ namespace CoreServer.HMessaging.HCommands
             }
             else
             {
-                HChannel.HChannel channel = null;
+                HChannel channel = null;
                 if (joinRequest.ChannelId != null)
                 {
                     channel = _channelManager.FindChannelById(joinRequest.ChannelId);
@@ -35,7 +34,10 @@ namespace CoreServer.HMessaging.HCommands
                     channel = _channelManager.FindChannelByName(joinRequest.ChannelName);
                 }
 
-                channel?.AddClient(client);
+                if (channel?.AddClient(client) == true)
+                {
+                    client.AddChannel(channel);
+                }
 
                 Console.WriteLine("[SERVER] User {0} tried joining channel {1}.",
                     client.GetDisplayName(), joinRequest.ChannelName);

@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
-using CoreServer.HChannel;
 using CoreServer.HMessaging;
 using CoreServer.HMessaging.HCommands;
 using Google.Protobuf;
@@ -34,6 +33,7 @@ namespace CoreServer
                 true);
 
             _channelManager.CreateChannel("memes");
+            Console.WriteLine(_channelManager.FindChannelByName("memes").Id);
         }
 
         public void RegisterDefaultCommands()
