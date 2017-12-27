@@ -7,11 +7,11 @@ using Google.Protobuf;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class ChatMessageCommand : ICommand
+    public class ChatMessageServerCommand : IServerCommand
     {
         private readonly HChannelManager _channelManager;
 
-        public ChatMessageCommand(HChannelManager channelManager)
+        public ChatMessageServerCommand(HChannelManager channelManager)
         {
             _channelManager = channelManager;
         }

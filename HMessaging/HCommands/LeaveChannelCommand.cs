@@ -4,11 +4,11 @@ using ChatProtos.Networking;
 using ChatProtos.Networking.Messages;
 namespace CoreServer.HMessaging.HCommands
 {
-    public class LeaveChannelCommand : ICommand
+    public class LeaveChannelServerCommand : IServerCommand
     {
         private readonly HChannelManager _channelManager;
 
-        public LeaveChannelCommand(HChannelManager channelManager)
+        public LeaveChannelServerCommand(HChannelManager channelManager)
         {
             _channelManager = channelManager;
         }

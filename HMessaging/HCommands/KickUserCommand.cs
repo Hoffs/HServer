@@ -3,7 +3,7 @@ using ChatProtos.Networking;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class KickUserCommand : ICommand
+    public class KickUserServerCommand : IServerCommand
     {
         public async Task Execute(RequestMessage message, HClient client)
         {

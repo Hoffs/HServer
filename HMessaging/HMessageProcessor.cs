@@ -32,7 +32,7 @@ namespace CoreServer
             try
             {
                 var command = _commandRegistry.GetCommand(new HCommandIdentifier(message.Type));
-                Console.WriteLine("[SERVER] Got command {0}", command.ToString());
+                Console.WriteLine("[SERVER] Got serverCommand {0}", command.ToString());
                 await command.Execute(message, hClient);
 
                 /*

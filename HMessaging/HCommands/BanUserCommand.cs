@@ -3,7 +3,7 @@ using ChatProtos.Networking;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class BanUserCommand : ICommand
+    public class BanUserServerCommand : IServerCommand
     {
         public async Task Execute(RequestMessage message, HClient client)
         {

@@ -3,7 +3,7 @@ using ChatProtos.Networking;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class RemoveRoleCommand : ICommand
+    public class RemoveRoleServerCommand : IServerCommand
     {
         public async Task Execute(RequestMessage message, HClient client)
         {

@@ -21,12 +21,12 @@ namespace CoreServer
         private readonly HMessageProcessor _messageProcessor;
         private const int SizeLimit = 5_000_000;
         private object _lock = new object(); // sync lock
-        public HCommandRegistry CommandRegistry { get; } = new HCommandRegistry(); // Maybe change to private and have a command in HServer to add commands.
+        private readonly HCommandRegistry _commandRegistry = new HCommandRegistry(); // Maybe change to private and have a serverCommand in HServer to add commands.
         
         
         public HServer(int port)
         {
-            _messageProcessor = new HMessageProcessor(CommandRegistry);
+            _messageProcessor = new HMessageProcessor(_commandRegistry);
             _listener = new TcpListener(IPAddress.Any, port);
             _listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
@@ -38,17 +38,17 @@ namespace CoreServer
 
         public void RegisterDefaultCommands()
         {
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Login), new LoginCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Logout), new LogoutCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelCommand(_channelManager));
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelCommand(_channelManager));
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.AddRole), new AddRoleCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.RemoveRole), new RemoveRoleCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.BanUser), new BanUserCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.KickUser), new KickUserCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UserInfo), new UserInfoCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UpdateDisplayName), new UpdateDisplayNameCommand());
-            CommandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageCommand(_channelManager));
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Login), new LoginServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Logout), new LogoutServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelServerCommand(_channelManager));
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelServerCommand(_channelManager));
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.AddRole), new AddRoleServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.RemoveRole), new RemoveRoleServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.BanUser), new BanUserServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.KickUser), new KickUserServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UserInfo), new UserInfoServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UpdateDisplayName), new UpdateDisplayNameServerCommand());
+            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageServerCommand(_channelManager));
         }
 
         public void Run()

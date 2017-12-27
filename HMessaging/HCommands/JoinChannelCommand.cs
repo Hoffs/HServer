@@ -5,11 +5,11 @@ using ChatProtos.Networking.Messages;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class JoinChannelCommand : ICommand
+    public class JoinChannelServerCommand : IServerCommand
     {
         private readonly HChannelManager _channelManager;
 
-        public JoinChannelCommand(HChannelManager channelManager)
+        public JoinChannelServerCommand(HChannelManager channelManager)
         {
             _channelManager = channelManager;
         }

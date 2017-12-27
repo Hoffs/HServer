@@ -6,7 +6,7 @@ using ChatProtos.Networking;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public interface ICommand
+    public interface IServerCommand
     {
         Task Execute(RequestMessage message, HClient client);
     }

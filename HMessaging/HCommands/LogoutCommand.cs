@@ -5,7 +5,7 @@ using ChatProtos.Networking.Messages;
 
 namespace CoreServer.HMessaging.HCommands
 {
-    public class LogoutCommand : ICommand
+    public class LogoutServerCommand : IServerCommand
     {
         public async Task Execute(RequestMessage message, HClient client)
         {
