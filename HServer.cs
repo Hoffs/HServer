@@ -16,39 +16,24 @@ namespace CoreServer
     public class HServer
     {
         private readonly TcpListener _listener;
-        private readonly HClientManager _clientManager = new HClientManager();
-        private readonly HChannelManager _channelManager = new HChannelManager();
-        private readonly HMessageProcessor _messageProcessor;
+        public HMessageProcessor MessageProcessor { get; }
+        public HClientManager ClientManager { get; } = new HClientManager();
+        public HChannelManager ChannelManager { get; } = new HChannelManager();
+        public HCommandRegistry CommandRegistry { get; } = new HCommandRegistry(); // Maybe change to private and have a serverCommand in HServer to add commands.
         private const int SizeLimit = 5_000_000;
         private object _lock = new object(); // sync lock
-        private readonly HCommandRegistry _commandRegistry = new HCommandRegistry(); // Maybe change to private and have a serverCommand in HServer to add commands.
         
         
         public HServer(int port)
         {
-            _messageProcessor = new HMessageProcessor(_commandRegistry);
+            MessageProcessor = new HMessageProcessor(CommandRegistry);
             _listener = new TcpListener(IPAddress.Any, port);
             _listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
                 true);
 
-            _channelManager.CreateChannel("memes");
-            Console.WriteLine(_channelManager.FindChannelByName("memes").Id);
-        }
-
-        public void RegisterDefaultCommands()
-        {
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Login), new LoginServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.Logout), new LogoutServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.JoinChannel), new JoinChannelServerCommand(_channelManager));
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.LeaveChannel), new LeaveChannelServerCommand(_channelManager));
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.AddRole), new AddRoleServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.RemoveRole), new RemoveRoleServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.BanUser), new BanUserServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.KickUser), new KickUserServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UserInfo), new UserInfoServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.UpdateDisplayName), new UpdateDisplayNameServerCommand());
-            _commandRegistry.RegisterCommand(new HCommandIdentifier(RequestType.ChatMessage), new ChatMessageServerCommand(_channelManager));
+            ChannelManager.CreateChannel("memes");
+            Console.WriteLine(ChannelManager.FindChannelByName("memes").Id);
         }
 
         public void Run()
@@ -67,7 +52,7 @@ namespace CoreServer
                 {
                     var tcpClient = await _listener.AcceptTcpClientAsync();
                     Console.WriteLine("[SERVER] Client connected");
-                    var hClient = await _clientManager.AddClientTask(tcpClient);
+                    var hClient = await ClientManager.AddClientTask(tcpClient);
 
                     if (hClient == null) continue;
 
@@ -110,7 +95,7 @@ namespace CoreServer
                     {
                         var message = RequestMessage.Parser.ParseFrom(buffer);
                         Console.WriteLine("[SERVER] Client {1} wrote protobuf of type: {0}", message.Type, hClient.GetDisplayName());
-                        await _messageProcessor.ProcessMessage(message, hClient);
+                        await MessageProcessor.ProcessMessage(message, hClient);
                         Console.WriteLine("[SERVER] Processed message from Client {0}", hClient.GetDisplayName());
                     }
                     catch (InvalidProtocolBufferException e)
@@ -141,6 +126,11 @@ namespace CoreServer
             {
                 Console.WriteLine(e);
             }
+        }
+
+        public void RegisterDefaultCommands()
+        {
+            HCommandRegistry.RegisterDefaultCommands(CommandRegistry, this);
         }
     }
 }

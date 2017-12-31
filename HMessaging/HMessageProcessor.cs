@@ -11,7 +11,7 @@ using Google.Protobuf;
 
 namespace CoreServer
 {
-    class HMessageProcessor
+    public class HMessageProcessor
     {
         private HCommandRegistry _commandRegistry;
 

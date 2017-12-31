@@ -10,7 +10,7 @@ using ChatProtos.Networking;
 
 namespace CoreServer
 {
-    class HClientManager
+    public class HClientManager
     {
         private readonly List<HClient> _clients = new List<HClient>();
         private readonly object _lock = new object();
