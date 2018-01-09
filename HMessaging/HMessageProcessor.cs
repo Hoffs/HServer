@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using ChatProtos.Networking;
-using ChatProtos.Networking.Messages;
-using CoreServer.HMessaging;
-using CoreServer.HMessaging.HCommands;
 using Google.Protobuf;
 
-namespace CoreServer
+namespace CoreServer.HMessaging
 {
-    public class HMessageProcessor
+    public class HMessageProcessor : IMessageProcessor
     {
-        private HCommandRegistry _commandRegistry;
+        private ICommandRegistry _commandRegistry;
 
-
-        public HMessageProcessor(HCommandRegistry registry)
+        public HMessageProcessor(ICommandRegistry registry)
         {
             _commandRegistry = registry;
         }
@@ -25,49 +18,27 @@ namespace CoreServer
         /// Processes the incoming message and returns the appropriate ResponseMessage.
         /// </summary>
         /// <param name="message">Incoming message.</param>
-        /// <param name="hClient">HClient which sent the message.</param>
+        /// <param name="connection">HClient which sent the message.</param>
         /// <returns>Returns ResponseMessage.</returns>
-        public async Task ProcessMessage(RequestMessage message, HClient hClient)
+        public async Task ProcessMessageTask(HConnection connection, byte[] message)
         {
             try
             {
-                var command = _commandRegistry.GetCommand(new HCommandIdentifier(message.Type));
-                Console.WriteLine("[SERVER] Got serverCommand {0}", command.ToString());
-                await command.Execute(message, hClient);
-
-                /*
-                switch (message.Type)
-                {                        
-                        
-                    case RequestType.ChatMessage:
-                        
-                    case RequestType.UserInfo:
-                        
-                    default:
-                        Console.WriteLine("Type not found or not implemented");
-                        break;
-                }
-                */
+                var requestMessage = RequestMessage.Parser.ParseFrom(message);
+                var command = _commandRegistry.GetCommand(new HCommandIdentifier(requestMessage.Type));
+                Console.WriteLine("[SERVER] Got serverCommand {0}", command?.ToString());
+                if (command != null) await command.Execute(connection, requestMessage);
             }
             catch (NotImplementedException e)
             {
                 Console.WriteLine("[SERVER] Command not implemented.");
             }
-            catch (CommandNotExistsException e)
-            {
-                Console.WriteLine("[SERVER] Command does not exist");
-            }
             catch (InvalidProtocolBufferException e)
             {
-                Console.WriteLine("[SERVER] Message of type {0} could not be parsed.", message.Type);
+                Console.WriteLine("[SERVER] Message of could not be parsed.");
                 Console.WriteLine(e);
                 throw;
             }
-        }
-
-        public async Task<RequestMessage> MakeResponse()
-        {
-            return new RequestMessage();
         }
     }
 }

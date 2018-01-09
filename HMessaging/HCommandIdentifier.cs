@@ -1,13 +1,12 @@
 ﻿using System;
 using ChatProtos.Networking;
 
-namespace CoreServer.HMessaging.HCommands
+namespace CoreServer.HMessaging
 {
     public class HCommandIdentifier
     {
         private readonly RequestType _protoType;
         private readonly string _stringType;
-        private readonly ITypeable _objectType;
 
         public HCommandIdentifier(RequestType protoType)
         {
@@ -17,11 +16,6 @@ namespace CoreServer.HMessaging.HCommands
         public HCommandIdentifier(string stringType)
         {
             _stringType = stringType;
-        }
-
-        public HCommandIdentifier(ITypeable customType)
-        {
-            _objectType = customType;
         }
 
         public override int GetHashCode()
@@ -35,9 +29,6 @@ namespace CoreServer.HMessaging.HCommands
                 } else if (_stringType != null)
                 {
                     return hash * 41 + _stringType.GetHashCode();
-                } else if (_objectType != null)
-                {
-                    return hash * 41 + _objectType.GetTypeString().GetHashCode();
                 }
                 else
                 {
@@ -50,7 +41,6 @@ namespace CoreServer.HMessaging.HCommands
         {
             return obj is HCommandIdentifier comparing 
                    && ((_protoType != null && _protoType.Equals(comparing._protoType)) 
-                   || (_objectType != null && _objectType?.GetTypeString().Equals(comparing._objectType?.GetTypeString()) == true)
                    || (_stringType != null && _stringType.Equals(comparing._stringType)));
         }
     }
