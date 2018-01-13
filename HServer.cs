@@ -1,96 +1,78 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading.Tasks;
+using CoreServer.HMessaging;
 
 namespace CoreServer
 {
     public class HServer
     {
-        private TcpListener listener;
-        object _lock = new Object(); // sync lock 
-        List<Task> _connections = new List<Task>(); // pending connections
-
-
-        public HServer(int port)
+        private readonly TcpListener _listener;
+        public IMessageProcessor MessageProcessor { get; }
+        public HConnectionManager ConnectionManager { get; } = new HConnectionManager();
+        
+        public HServer(int port, IMessageProcessor messageProcessor)
         {
-            listener = new TcpListener(IPAddress.Any, port);
-            listener.Server.SetSocketOption(SocketOptionLevel.Socket,
+            MessageProcessor = messageProcessor;
+            _listener = new TcpListener(IPAddress.Any, port);
+            _listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
                 true);
         }
 
         public void Run()
         {
+            Console.WriteLine("[SERVER] Server started");
             StartListener().Wait();
+            Console.WriteLine("[SERVER] Server exiting");
         }
 
-        private Task StartListener()
-        {
-            return Task.Run(async () =>
-            {
-                listener.Start();
-                while (true)
-                {
-                    var tcpClient = await listener.AcceptTcpClientAsync();
-                    Console.WriteLine("Client connected");
-                    var task = StartHandleConnectionAsync(tcpClient);
-                    // if already faulted, re-throw any error on the calling context
-                    if (task.IsFaulted)
-                        task.Wait();
-                }
-            });
-        }
-
-        private async Task StartHandleConnectionAsync(TcpClient tcpClient)
-        {
-            // start the new connection task
-            var connectionTask = HandleConnectionAsync(tcpClient);
-
-            // add it to the list of pending task 
-            lock (_lock)
-                _connections.Add(connectionTask);
-
-            // catch all errors of HandleConnectionAsync
-            try
-            {
-                await connectionTask;
-                // we may be on another thread after "await"
-            }
-            catch (Exception ex)
-            {
-                // log the error
-                Console.WriteLine(ex.ToString());
-            }
-            finally
-            {
-                // remove pending task
-                lock (_lock)
-                    _connections.Remove(connectionTask);
-            }
-        }
-
-        private async Task HandleConnectionAsync(TcpClient tcpClient)
+        private async Task StartListener()
         {
             await Task.Yield();
-            // continue asynchronously on another threads
-
-            using (var networkStream = tcpClient.GetStream())
+            _listener.Start();
+            while (true)
             {
-                while (tcpClient.Connected)
-                {
+                var tcpClient = await _listener.AcceptTcpClientAsync();
+                Console.WriteLine("[SERVER] Client connected");
+                
+                var connection = await ConnectionManager.AddConnectiontTask(tcpClient);
+                await InitializeClientTask(connection);
 
-                    var buffer = new byte[4096];
-                    Console.WriteLine("[Server] Reading from client. Conncted {0}", tcpClient.Connected);
-                    var byteCount = await networkStream.ReadAsync(buffer, 0, buffer.Length);
-                    var request = Encoding.UTF8.GetString(buffer, 0, byteCount);
-                    Console.WriteLine("[Server] Client wrote {0}", request);
+                var task = StartReadingMessagesTask(connection);
+                if (task.IsFaulted)
+                    task.Wait();
+            }
+        }
+
+        /// <summary>
+        /// Called before starting to read packets from the client.
+        /// Useful for initializing client.
+        /// </summary>
+        /// <param name="connection">HConnection of the client</param>
+        /// <returns></returns>
+        protected virtual async Task InitializeClientTask(HConnection connection)
+        {
+            return;
+        }
+
+        /// <summary>
+        /// Task that constatly reads packets from HConnection.
+        /// </summary>
+        /// <param name="connection">HConnection from whom to start accepting packets.</param>
+        /// <returns></returns>
+        protected virtual async Task StartReadingMessagesTask(HConnection connection)
+        {
+            await Task.Yield();
+            Console.WriteLine("[SERVER] Reading messages for tcpclient");
+            while (connection.IsConnected())
+            {
+                var message = await connection.ReadMessageTask();   
+                if (message != null && MessageProcessor != null)
+                {
+                    await MessageProcessor.ProcessMessageTask(connection, message);
                 }
-                // var serverResponseBytes = Encoding.UTF8.GetBytes("Hello from server");
-                // await networkStream.WriteAsync(serverResponseBytes, 0, serverResponseBytes.Length);
-                // Console.WriteLine("[Server] Response has been written");
             }
         }
     }
