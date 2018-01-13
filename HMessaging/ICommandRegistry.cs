@@ -1,9 +1,11 @@
-﻿namespace CoreServer.HMessaging
-{
-    public interface ICommandRegistry
-    {
-        void RegisterCommand(HCommandIdentifier identifier, IServerCommand command);
+﻿using System.Threading.Tasks;
 
-        IServerCommand GetCommand(HCommandIdentifier identifier);
+namespace CoreServer.HMessaging
+{
+    public interface ICommandRegistry<T> where T : class
+    {
+        Task RegisterCommand(HCommandIdentifier identifier, T command);
+
+        Task<T> GetCommand(HCommandIdentifier identifier);
     }
 }

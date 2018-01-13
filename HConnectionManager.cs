@@ -16,7 +16,7 @@ namespace CoreServer
         /// </summary>
         /// <param name="tcpClient">Instance of connecting client</param>
         /// <returns></returns>
-        [NotNull]
+        [ItemNotNull]
         public async Task<HConnection> AddConnectiontTask([NotNull] TcpClient tcpClient)
         {
             await Task.Yield();

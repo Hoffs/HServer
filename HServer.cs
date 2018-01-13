@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using CoreServer.HMessaging;
-using JetBrains.Annotations;
 
 namespace CoreServer
 {
@@ -11,13 +10,11 @@ namespace CoreServer
     {
         private readonly TcpListener _listener;
         public IMessageProcessor MessageProcessor { get; }
-        public ICommandRegistry CommandRegistry { get; } // Maybe change to private and have a serverCommand in HServer to add commands.
         public HConnectionManager ConnectionManager { get; } = new HConnectionManager();
         
-        public HServer(int port, ICommandRegistry commandRegistry, IMessageProcessor messageProcessor)
+        public HServer(int port, IMessageProcessor messageProcessor)
         {
             MessageProcessor = messageProcessor;
-            CommandRegistry = commandRegistry;
             _listener = new TcpListener(IPAddress.Any, port);
             _listener.Server.SetSocketOption(SocketOptionLevel.Socket,
                 SocketOptionName.KeepAlive, 
@@ -49,6 +46,12 @@ namespace CoreServer
             }
         }
 
+        /// <summary>
+        /// Called before starting to read packets from the client.
+        /// Useful for initializing client.
+        /// </summary>
+        /// <param name="connection">HConnection of the client</param>
+        /// <returns></returns>
         protected virtual async Task InitializeClientTask(HConnection connection)
         {
             return;
@@ -65,10 +68,8 @@ namespace CoreServer
             Console.WriteLine("[SERVER] Reading messages for tcpclient");
             while (connection.IsConnected())
             {
-
-                var message = await connection.ReadMessageTask();
-                
-                if (message != null)
+                var message = await connection.ReadMessageTask();   
+                if (message != null && MessageProcessor != null)
                 {
                     await MessageProcessor.ProcessMessageTask(connection, message);
                 }
