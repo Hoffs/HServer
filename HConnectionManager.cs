@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace CoreServer
+namespace HServer
 {
     public class HConnectionManager
     {

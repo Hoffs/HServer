@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace CoreServer.HMessaging
+namespace HServer.HMessaging
 {
     public class HCommandRegistry<T> : ICommandRegistry<T> where T : class
     {

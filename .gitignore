@@ -287,5 +287,3 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 
-# Generated files (Protobuf)
-*.g.cs

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using ChatProtos.Networking;
+using HServer.Networking;
 
-namespace CoreServer.HMessaging
+namespace HServer.HMessaging
 {
     public interface IServerCommand
     {

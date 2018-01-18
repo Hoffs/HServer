@@ -1,38 +1,44 @@
 ﻿using System;
-using ChatProtos.Networking;
 
-namespace CoreServer.HMessaging
+namespace HServer.HMessaging
 {
     public class HCommandIdentifier
     {
-        private readonly RequestType _protoType;
-        private readonly string _stringType;
+        private enum IdentifierType
+        {
+            Proto = 0,
+            String = 1
+        }
 
-        public HCommandIdentifier(RequestType protoType)
+        private readonly int _protoType;
+        private readonly string _stringType;
+        private readonly IdentifierType _type;
+
+        public HCommandIdentifier(int protoType)
         {
             _protoType = protoType;
+            _type = IdentifierType.Proto;
         }
 
         public HCommandIdentifier(string stringType)
         {
             _stringType = stringType;
+            _type = IdentifierType.String;
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                var hash = 83; // 41
-                if (_protoType != null)
+                const int hash = 83; // 41
+                switch (_type)
                 {
-                    return hash * 41 + _protoType.GetHashCode();
-                } else if (_stringType != null)
-                {
-                    return hash * 41 + _stringType.GetHashCode();
-                }
-                else
-                {
-                    throw new NullTypeException();
+                    case IdentifierType.Proto:
+                        return hash * 41 + _protoType.GetHashCode();
+                    case IdentifierType.String:
+                        return hash * 41 + _stringType.GetHashCode();
+                    default:
+                        throw new NullTypeException();
                 }
             }
         }
@@ -40,8 +46,8 @@ namespace CoreServer.HMessaging
         public override bool Equals(object obj)
         {
             return obj is HCommandIdentifier comparing 
-                   && ((_protoType != null && _protoType.Equals(comparing._protoType)) 
-                   || (_stringType != null && _stringType.Equals(comparing._stringType)));
+                   && ((_type == IdentifierType.Proto && _protoType.Equals(comparing._protoType)) 
+                   || (_type == IdentifierType.String && _stringType.Equals(comparing._stringType)));
         }
     }
 

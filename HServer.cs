@@ -2,9 +2,9 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using CoreServer.HMessaging;
+using HServer.HMessaging;
 
-namespace CoreServer
+namespace HServer
 {
     public class HServer
     {

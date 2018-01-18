@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace CoreServer.HMessaging
+namespace HServer.HMessaging
 {
     public interface ICommandRegistry<T> where T : class
     {
