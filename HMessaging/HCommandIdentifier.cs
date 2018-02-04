@@ -1,57 +1,109 @@
-﻿using System;
-
-namespace HServer.HMessaging
+﻿namespace HServer.HMessaging
 {
+    using JetBrains.Annotations;
+
+    /// <summary>
+    /// The command identifier.
+    /// </summary>
     public class HCommandIdentifier
     {
-        private enum IdentifierType
-        {
-            Proto = 0,
-            String = 1
-        }
+        /// <summary>
+        /// The proto identifier.
+        /// </summary>
+        private readonly int _proto;
 
-        private readonly int _protoType;
-        private readonly string _stringType;
+        /// <summary>
+        /// The string identifier.
+        /// </summary>
+        [CanBeNull]
+        private readonly string _string;
+
+        /// <summary>
+        /// The type of identifier.
+        /// </summary>
+        [NotNull]
         private readonly IdentifierType _type;
 
-        public HCommandIdentifier(int protoType)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HCommandIdentifier"/> class.
+        /// </summary>
+        /// <param name="proto">
+        /// The proto identifier.
+        /// </param>
+        public HCommandIdentifier(int proto)
         {
-            _protoType = protoType;
+            _proto = proto;
             _type = IdentifierType.Proto;
         }
 
-        public HCommandIdentifier(string stringType)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HCommandIdentifier"/> class.
+        /// </summary>
+        /// <param name="stringIdentifier">
+        /// The string identifier.
+        /// </param>
+        public HCommandIdentifier([NotNull] string stringIdentifier)
         {
-            _stringType = stringType;
+            _string = stringIdentifier;
             _type = IdentifierType.String;
         }
 
+        /// <summary>
+        /// The identifier type.
+        /// </summary>
+        private enum IdentifierType
+        {
+            /// <summary>
+            /// The proto identifier.
+            /// </summary>
+            Proto = 0,
+
+            /// <summary>
+            /// The string identifier.
+            /// </summary>
+            String = 1
+        }
+
+        /// <summary>
+        /// Gets hash code.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="int"/>.
+        /// </returns>
+        /// <exception cref="NullTypeException">
+        /// If identifier type is not specified.
+        /// </exception>
         public override int GetHashCode()
         {
             unchecked
             {
-                const int hash = 83; // 41
+                const int Hash = 83; // 41
                 switch (_type)
                 {
                     case IdentifierType.Proto:
-                        return hash * 41 + _protoType.GetHashCode();
+                        return (Hash * 41) + _proto.GetHashCode();
                     case IdentifierType.String:
-                        return hash * 41 + _stringType.GetHashCode();
+                        return (Hash * 41) + _string.GetHashCode();
                     default:
                         throw new NullTypeException();
                 }
             }
         }
 
+        /// <summary>
+        /// Checks if objects are equals.
+        /// </summary>
+        /// <param name="obj">
+        /// The comparing object.
+        /// </param>
+        /// <returns>
+        /// The <see cref="bool"/>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             return obj is HCommandIdentifier comparing 
-                   && ((_type == IdentifierType.Proto && _protoType.Equals(comparing._protoType)) 
-                   || (_type == IdentifierType.String && _stringType.Equals(comparing._stringType)));
+                   && ((_type == IdentifierType.Proto && _proto.Equals(comparing._proto)) 
+                   || (_type == IdentifierType.String && _string.Equals(comparing._string)));
         }
-    }
-
-    internal class NullTypeException : Exception
-    {
     }
 }
