@@ -90,6 +90,22 @@
                     await messageProcessor.ProcessMessageTask(connection, message).ConfigureAwait(false);
                 }
             }
+            Console.WriteLine("[SERVER] Finished reading messages for tcpclient");
+            await DisposeClientTask(connection).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Disposes connection and related information after client disconnects.
+        /// </summary>
+        /// <param name="connection">
+        /// The client connection.
+        /// </param>
+        /// <returns>
+        /// The <see cref="Task"/>.
+        /// </returns>
+        protected virtual async Task DisposeClientTask([NotNull] HConnection connection)
+        {
+            return;
         }
 
         /// <summary>

@@ -23,12 +23,12 @@ namespace HServer.Networking {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChhOZXR3b3JraW5nL1JlcXVlc3QucHJvdG8SEkhTZXJ2ZXIuTmV0d29ya2lu",
-            "ZyIvCg5SZXF1ZXN0TWVzc2FnZRIPCgdtZXNzYWdlGAEgASgMEgwKBHR5cGUY",
-            "AiABKAViBnByb3RvMw=="));
+            "ZyI+Cg5SZXF1ZXN0TWVzc2FnZRIPCgdtZXNzYWdlGAEgASgMEgwKBHR5cGUY",
+            "AiABKAUSDQoFbm9uY2UYAyABKAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::HServer.Networking.RequestMessage), global::HServer.Networking.RequestMessage.Parser, new[]{ "Message", "Type" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::HServer.Networking.RequestMessage), global::HServer.Networking.RequestMessage.Parser, new[]{ "Message", "Type", "Nonce" }, null, null, null)
           }));
     }
     #endregion
@@ -61,6 +61,7 @@ namespace HServer.Networking {
     public RequestMessage(RequestMessage other) : this() {
       message_ = other.message_;
       type_ = other.type_;
+      nonce_ = other.nonce_;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -90,6 +91,17 @@ namespace HServer.Networking {
       }
     }
 
+    /// <summary>Field number for the "nonce" field.</summary>
+    public const int NonceFieldNumber = 3;
+    private string nonce_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Nonce {
+      get { return nonce_; }
+      set {
+        nonce_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as RequestMessage);
@@ -105,6 +117,7 @@ namespace HServer.Networking {
       }
       if (Message != other.Message) return false;
       if (Type != other.Type) return false;
+      if (Nonce != other.Nonce) return false;
       return true;
     }
 
@@ -113,6 +126,7 @@ namespace HServer.Networking {
       int hash = 1;
       if (Message.Length != 0) hash ^= Message.GetHashCode();
       if (Type != 0) hash ^= Type.GetHashCode();
+      if (Nonce.Length != 0) hash ^= Nonce.GetHashCode();
       return hash;
     }
 
@@ -131,6 +145,10 @@ namespace HServer.Networking {
         output.WriteRawTag(16);
         output.WriteInt32(Type);
       }
+      if (Nonce.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Nonce);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -141,6 +159,9 @@ namespace HServer.Networking {
       }
       if (Type != 0) {
         size += 1 + pb::CodedOutputStream.ComputeInt32Size(Type);
+      }
+      if (Nonce.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Nonce);
       }
       return size;
     }
@@ -155,6 +176,9 @@ namespace HServer.Networking {
       }
       if (other.Type != 0) {
         Type = other.Type;
+      }
+      if (other.Nonce.Length != 0) {
+        Nonce = other.Nonce;
       }
     }
 
@@ -172,6 +196,10 @@ namespace HServer.Networking {
           }
           case 16: {
             Type = input.ReadInt32();
+            break;
+          }
+          case 26: {
+            Nonce = input.ReadString();
             break;
           }
         }
