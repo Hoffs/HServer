@@ -29,7 +29,7 @@
         /// <returns>
         /// The <see cref="bool"/>.
         /// </returns>
-        public static bool TryParse<T>([NotNull] MessageParser<T> parser, [CanBeNull] ByteString message, [CanBeNull] out T parsed) where T : class, IMessage<T>
+        public static bool TryParse<T>([NotNull] MessageParser<T> parser, [CanBeNull] ByteString message, [NotNull] out T parsed) where T : class, IMessage<T>
         {
             try
             {
